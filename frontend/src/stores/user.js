@@ -5,10 +5,11 @@ import axios from 'axios';
 export const useUserStore = defineStore('user', {
     state: () => ({
         success: true,
-        result_data: null,
+        result_message: '',
         currentUser: null
     }),
     actions: {
+
         async login(userData) {
             await axios
                 .post(
@@ -18,28 +19,32 @@ export const useUserStore = defineStore('user', {
                         headers: {'Content-Type': 'application/json'}
                     })
                 .then((response) => {
-                    this.result_data = response.data;
-                    if (this.result_data.success)
-                        this.currentUser = this.result_data.user
-                    this.success = true;
-                    // sessionStorage.setItem('currentUser', JSON.stringify(response.data));
+                    this.result_message = response.data.message;
+                    if (response.data.success)
+                        this.currentUser = response.data.user
+                    this.success = response.data.success;
+                    sessionStorage.setItem('currentUser', JSON.stringify(response.data.user));
                 })
                 .catch((error) => {
-                    console.error('Ошибка при регистрации:', error);
+                    console.error('Ошибка при входе:', error);
+                    this.result_message = "Ошибка входа"
                     this.success = false;
                 })
         },
+
         logout() {
             this.currentUser = null;
-            this.result_data = null
-            // sessionStorage.removeItem('currentUser');
+            this.result_message = "";
+            sessionStorage.removeItem('currentUser');
         },
+
         loadFromSession() {
-            // const user = sessionStorage.getItem('currentUser');
-            // if (user) {
-            //     this.currentUser = JSON.parse(user);
-            // }
+            const user = sessionStorage.getItem('currentUser');
+            if (user) {
+                this.currentUser = JSON.parse(user);
+            }
         },
+
         registration(userData){
             axios
                 .post(
@@ -52,13 +57,16 @@ export const useUserStore = defineStore('user', {
                         }
                     })
                 .then((response) => {
-                    this.result_data = response.data;
-                    if (this.result_data.success)
-                        this.currentUser = this.result_data.user
-                    this.success = true;
+                    this.result_message = response.data;
+                    if (response.data.success) {
+                        this.currentUser = response.data.user
+                        sessionStorage.setItem('currentUser', JSON.stringify(response.data.user));
+                    }
+                    this.success = response.data.success;
                 })
                 .catch((error) => {
                     console.error('Ошибка при регистрации:', error);
+                    this.result_message = "Ошибка при регистрации"
                     this.success = false;
                 })
         }

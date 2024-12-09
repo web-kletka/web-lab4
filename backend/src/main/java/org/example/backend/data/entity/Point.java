@@ -2,7 +2,6 @@ package org.example.backend.data.entity;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,9 +9,9 @@ import java.util.Date;
 
 @Getter
 @Entity
-@Table(name = "dots")
+@Table(name = "points")
 @NoArgsConstructor
-public class MainModel {
+public class Point {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -42,28 +41,21 @@ public class MainModel {
     @Temporal(TemporalType.TIMESTAMP)
     private Date date;
 
-    @Transient
-    private String info;
-
-    public MainModel(int master, Float x, Float y, Float z, Float r, boolean result) {
+    public Point(int master, Float x, Float y, Float z, Float r, boolean result, long time) {
         this.master = master;
         this.x = x;
         this.y = y;
         this.z = z;
         this.r = r;
         this.result = result;
-        this.time = System.currentTimeMillis();
+        this.time = time;
         this.date = new Date();
     }
 
-    public MainModel(String info) {
-        this.info = info;
-    }
 
     public String getXyzr(){
         return x + "," + y + "," + z +"," + r ;
     }
-
 
 
     @Override

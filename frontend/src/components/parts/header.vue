@@ -9,10 +9,8 @@ export default {
     methods:{
       handleClick(button) {
         if (button.route) {
-          // Навигация через Vue Router
           this.$router.push(button.route);
         } else if (button.onClick) {
-          // Выполнить переданный обработчик
           button.onClick();
         }
       },
@@ -66,13 +64,13 @@ export default {
     margin-right: 2em;
   }
 
-  .left_menu{
+  .header .left_menu{
     display: inline-flex;
     flex-direction: row;
     align-items: center;
   }
 
-  .menu_but{
+  .header .menu_but{
     padding: 10px;
     width: 100%;
     font-size: 1.1em;

@@ -9,6 +9,7 @@ import route from "@/route/index.js";
 
 
 export default {
+  name: 'start',
   components: { Header },
   setup(){
   },
@@ -18,9 +19,9 @@ export default {
     return{
 
         disabled: false,
-        result_data: {},
-        result_message: '',
+        user: userStore.currentUser,
         reg_login: userStore.currentUser?.login || '',
+        result_message: '',
         show_login_form: false,
         show_button: true,
 
@@ -61,30 +62,33 @@ export default {
         login: this.login,
         password: this.password
       };
+
       const userStore = useUserStore();
       await userStore.login(userData);
-      this.result_data = userStore.result_data
+      console.log(userStore.success, userStore.result_message, userStore.currentUser)
 
-      console.log(this.result_data.success, this.result_data.message, this.result_data.user.login)
-      if (this.result_data.success){
+
+      this.user = userStore.currentUser
+
+      if (userStore.success){
         this.buttons = [
           { text: 'Выйти', onClick: () => this.logOut()},
         ]
-        this.reg_login = this.result_data.user.login
+        this.reg_login = this.user.login
 
         this.show_login_form = false
         this.show_button = true
       }
       else{
+        this.result_message = userStore.result_message
         this.warnDisabled()
-        this.result_message = this.result_data.message
       }
     },
 
     logOut(){
       const userStore = useUserStore();
       userStore.logout();
-      this.result_data = userStore.result_data
+      this.user = null
 
       this.show_login_form = false
       this.reg_login = ""
@@ -168,7 +172,18 @@ export default {
   </body>
 </template>
 
-<style>
+<style scoped>
+@import "../style/form.css";
+@import "../style/button.css";
+@import "../style/body.css";
+
+body {
+  display: flex;
+  flex-direction: column;
+  background-color: #333;
+  overflow: hidden; /* Прячем выходящие элементы */
+  min-height: 100vh;
+}
 
 .shake {
   animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
@@ -225,7 +240,8 @@ export default {
 
 .login_form button{
   margin-left: auto;
-  width: 310px;
+  margin-right: auto;
+  width: 240px;
 }
 
 .result_message{

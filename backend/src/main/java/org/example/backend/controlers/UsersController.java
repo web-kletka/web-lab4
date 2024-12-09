@@ -1,9 +1,11 @@
 package org.example.backend.controlers;
 
+import ch.qos.logback.core.model.INamedModel;
 import org.example.backend.common.PasswordGeneration;
 import org.example.backend.common.enums.LoginType;
 import org.example.backend.common.enums.RegisterType;
-import org.example.backend.controlers.ResponseDAO.UserResponse;
+import org.example.backend.controlers.ResponseDAO.CutDownUser;
+import org.example.backend.controlers.ResponseDAO.CutDownUserResponse;
 import org.example.backend.data.entity.User;
 import org.example.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,45 +30,46 @@ public class UsersController {
     }
 
     @PostMapping("/api/reg")
-    public UserResponse registration(@RequestBody Map<String, String> requestBody) {
+    public CutDownUserResponse registration(@RequestBody Map<String, String> requestBody) {
         String login = requestBody.get("login");
+        Integer status = Objects.equals(requestBody.get("code_word"), "лучше хуем бить орехи чем учиться в политехе") ? 1: 0;
         String salt = PasswordGeneration.generateSalt();
         String password = PasswordGeneration.generatePassword(requestBody.get("password"), salt);
         if (userService.getUserExists(login))
-            return new UserResponse(
+            return new CutDownUserResponse(
                     RegisterType.LOGIN_ALREADY_EXISTS.isSuccess(),
                     RegisterType.LOGIN_ALREADY_EXISTS.getResult(),
-                    new User());
-        User user = new User(login, password, salt, 0);
+                    CutDownUser.fromUser(null));
+        User user = new User(login, password, salt, 0,status);
         userService.saveUser(user);
-        return new UserResponse(
+        return new CutDownUserResponse(
                 RegisterType.SUCCESSFUL.isSuccess(),
                 RegisterType.SUCCESSFUL.getResult(),
-                user);
+                CutDownUser.fromUser(user));
     }
 
 
     @PostMapping("/api/login")
-    public UserResponse login(@RequestBody Map<String, String> requestBody) {
+    public CutDownUserResponse login(@RequestBody Map<String, String> requestBody) {
 
         String login = requestBody.get("login");
         String password = requestBody.get("password");
 
         User user = userService.getUserByUsername(login);
         if (Objects.isNull(user))
-            return new UserResponse(
+            return new CutDownUserResponse(
                     LoginType.INVALID_LOGIN_OR_PASSWORD.isSuccess(),
                     LoginType.INVALID_LOGIN_OR_PASSWORD.getResult(),
-                    new User());
+                    CutDownUser.fromUser(null));
         if (PasswordGeneration.checkPassword(user.getPassword(), password, user.getSalt()))
-            return new UserResponse(
+            return new CutDownUserResponse(
                     LoginType.SUCCESS.isSuccess(),
                     LoginType.SUCCESS.getResult(),
-                    user);
-        return new UserResponse(
+                    CutDownUser.fromUser(user));
+        return new CutDownUserResponse(
                 LoginType.INVALID_LOGIN_OR_PASSWORD.isSuccess(),
                 LoginType.INVALID_LOGIN_OR_PASSWORD.getResult(),
-                new User());
+                CutDownUser.fromUser(null));
     }
 
 }

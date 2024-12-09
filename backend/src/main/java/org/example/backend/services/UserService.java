@@ -26,5 +26,14 @@ public class UserService {
     public boolean getUserExists(String login) {
         return userRepository.findByLogin(login) != null;
     }
+
+    public int getUserIdByUsername(String login) {
+        return userRepository.findIdByLogin(login);
+    }
+
+    public int getUserStatusByUsername(String login) {
+        return userRepository.findStatusByLogin(login);
+    }
+
 }
 

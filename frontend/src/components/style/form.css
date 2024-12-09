@@ -9,11 +9,11 @@ form {
 
 form div {
     display: flex; /* Включаем flex */
-    flex-direction: row; /* Содержимое располагается горизонтально */
+    flex-direction: column; /* Содержимое располагается горизонтально */
     align-items: center; /* Вертикальное выравнивание по центру */
     justify-content: space-between; /* Распределяем элементы */
     /*background: coral;*/
-    margin: 10px;
+    margin: 5px;
     padding: 10px;
     border-radius: 5px;
 }
@@ -22,9 +22,8 @@ form div {
 form div label {
     text-align: center;
     font-size: 1.1em;
+    padding: 5px;
     color: #e0e0e0;
-
-    margin-right: 10px; /* Отступ справа от метки */
 }
 
 input[type="text"], input[type="password"] {
