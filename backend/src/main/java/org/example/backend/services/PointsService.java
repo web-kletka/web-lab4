@@ -2,7 +2,6 @@ package org.example.backend.services;
 
 import org.example.backend.data.PointsRepository;
 import org.example.backend.data.entity.Point;
-import org.example.backend.data.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

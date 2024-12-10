@@ -1,14 +1,10 @@
 package org.example.backend.controlers.ResponseDAO;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.example.backend.data.entity.Point;
-import org.example.backend.data.entity.User;
 
 import java.util.Date;
-import java.util.Objects;
 
 @Setter
 @Getter

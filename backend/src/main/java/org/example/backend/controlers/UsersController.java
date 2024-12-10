@@ -1,6 +1,5 @@
 package org.example.backend.controlers;
 
-import ch.qos.logback.core.model.INamedModel;
 import org.example.backend.common.PasswordGeneration;
 import org.example.backend.common.enums.LoginType;
 import org.example.backend.common.enums.RegisterType;

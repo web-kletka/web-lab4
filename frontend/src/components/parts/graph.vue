@@ -40,6 +40,8 @@ export default {
       return x ** 2 + y ** 2 + z ** 2 + Math.sin(4 * x) + Math.sin(4 * y) + Math.sin(4 * z) - this.R;
     };
 
+    // const implicitFunction = this.func
+
     const getColor = (x, y, z) => {
       return implicitFunction(x, y, z) <= 0
     };

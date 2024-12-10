@@ -24,14 +24,17 @@ export function drawGraphic(scene, r, implicitFunction){
     scene.add(axisZ);
 
     // Параметры сетки
-    const size = 5.5; // Границы поиска (от -size до size)
-    const step = 0.07; // Шаг поиска
-    const threshold = 0.3; // Точность попадания
+
 
     // Уравнение поверхности
 
     // Создание точек поверхности
     const vertices = [];
+
+    const size = 5.5; // Границы поиска (от -size до size)
+    const step = 0.07; // Шаг поиска
+    const threshold = 0.3; // Точность попадания
+
     for (let x = -size; x <= size; x += step) {
         for (let y = -size; y <= size; y += step) {
             for (let z = -size; z <= size; z += step) {
