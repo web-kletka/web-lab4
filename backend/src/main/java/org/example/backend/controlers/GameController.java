@@ -8,6 +8,8 @@ import org.example.backend.services.ParsParamsService;
 import org.example.backend.services.PointsService;
 import org.example.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -16,7 +18,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/game")
-@CrossOrigin(origins = "http://localhost:5173/")
 public class GameController {
     private final CalculateResultService calculateResultService;
     private final ParsParamsService parsParamsService;
@@ -41,7 +42,9 @@ public class GameController {
         String y = requestBody.get("y");
         String z = requestBody.get("z");
         String r = requestBody.get("r");
-        String user = requestBody.get("user");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String user = authentication.getName();
+
         Point point = null;
         long startTime = System.currentTimeMillis();
         try {

@@ -20,6 +20,7 @@ export default {
     const graphs = ref(null);
     const myTable = ref(null);
     const point = ref({x:'', y:'', z:'',})
+    const func = sessionStorage.getItem("func")
 
     const handleCheckboxChange = (index, event) => {
       const newValues = [...rValues.value];
@@ -54,8 +55,7 @@ export default {
         x: toRaw(point.value).x,
         y: toRaw(point.value).y,
         z: toRaw(point.value).z,
-        r: toRaw(result_r.value),
-        user: userStore.currentUser.login
+        r: toRaw(result_r.value)
       };
 
       await axios
@@ -64,6 +64,7 @@ export default {
               pointData,
               {
                 headers: {
+                  'Authorization': 'Bearer ' + sessionStorage.getItem('token'),
                   'Content-Type': 'application/json',
                   Accept: 'application/json'
                 }
@@ -108,8 +109,17 @@ export default {
       }
 
       try {
-        const response = await axios.get('http://localhost:8080/api/game/get_all_points');
-        console.log("Полученные точки:", response.data);
+        console.log(sessionStorage.getItem('token') + " 9 ")
+        const response = await axios.get(
+            'http://localhost:8080/api/game/get_all_points',
+            {
+              headers: {
+                'Authorization': 'Bearer ' + sessionStorage.getItem('token'),
+              },
+            }
+        );
+
+        console.log('Response:', response.data); // Обрабатываем успешный ответ
 
         if (Array.isArray(response.data)) {
           myTable.value.clearPoints()
@@ -133,9 +143,19 @@ export default {
       if (myTable.value && graphs.value) {
         console.log("addTablePoint");
         await axios
-            .delete('http://localhost:8080/api/game/admin/delete_all_points', {
-              data: { login: userStore.currentUser.login }
-            })
+            .delete(
+                'http://localhost:8080/api/game/admin/delete_all_points',
+                {
+                  headers: {
+                    'Authorization': 'Bearer ' + sessionStorage.getItem('token'),
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                  }
+                },
+                {
+                  data: { login: userStore.currentUser.login }
+                }
+            )
             .then((response) => {
               if (response.data) result.value = "Таблица успешно отчищена"
               else result.value = "произошла ошибка при отчистке бд"
@@ -159,7 +179,8 @@ export default {
       handleCheckboxChange,
       addPoint,
       setPoints,
-      clearPoints
+      clearPoints,
+      func
     };
   },
   mounted() {
@@ -236,7 +257,7 @@ export default {
 
     <!-- Canvas для отрисовки фигуры -->
     <div class="graph">
-      <Graph ref="graphs"/>
+      <Graph ref="graphs" :func="func"/>
       <router-link class="button" to="/graph" style="padding: 1px">изменение функции</router-link>
     </div>
 

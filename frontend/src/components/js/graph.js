@@ -1,16 +1,8 @@
-
-
-// Управление камерой
-
-// Настройка камеры
-
-
-
-
 import * as THREE from "three";
+import Worker from './searchPointsWorker.js?worker'
 
-
-export function drawGraphic(scene, r, implicitFunction){
+let worker
+export function drawGraphic(scene, r, equationStr){
 
     scene.clear()
     // Создание осей
@@ -23,39 +15,36 @@ export function drawGraphic(scene, r, implicitFunction){
     scene.add(axisY);
     scene.add(axisZ);
 
-    // Параметры сетки
+    console.log(equationStr)
 
-
-    // Уравнение поверхности
-
-    // Создание точек поверхности
-    const vertices = [];
-
-    const size = 5.5; // Границы поиска (от -size до size)
-    const step = 0.07; // Шаг поиска
-    const threshold = 0.3; // Точность попадания
-
-    for (let x = -size; x <= size; x += step) {
-        for (let y = -size; y <= size; y += step) {
-            for (let z = -size; z <= size; z += step) {
-                const value = implicitFunction(x, y, z);
-                if (Math.abs(value) < threshold) {
-                    vertices.push(new THREE.Vector3(x, y, z));
-                }
-            }
-        }
+    if (worker) {
+        worker.terminate();
     }
 
-    const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
-    const material = new THREE.PointsMaterial({ color: 0x003366, size: 0.05 });
-    const points = new THREE.Points(geometry, material);
-    scene.add(points);
+    worker = new Worker()
+
+    worker.postMessage({equationString: equationStr, r: r});
+
+    worker.onmessage = (event) => {
+        const rawPoints = event.data;
+
+        const vertices = rawPoints.map(([x, y, z]) => new THREE.Vector3(x, y, z));
+
+        const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
+        const material = new THREE.PointsMaterial({ color: 0x003366, size: 0.05 });
+        const points = new THREE.Points(geometry, material);
+        scene.add(points);
+    };
+
+    worker.onerror = (error) => {
+        console.error("Ошибка в воркере:", error.message);
+    };
 }
 
-export function isDynamicChecked(scene, getColor, points, checked){
+export function isDynamicChecked(scene, getColor, points, checked, r){
     if (checked) {
         points.forEach(point => {
-            drawPoint(scene, point.x, point.y, point.z,getColor(point.x, point.y, point.z, Number(points.result)) ? "green" : "red");
+            drawPoint(scene, point.x, point.y, point.z,getColor(point.x, point.y, point.z, r) ? "green" : "red");
         });
     }
     else{

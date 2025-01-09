@@ -3,13 +3,15 @@ import Header from "@/components/parts/header.vue";
 import { useUserStore } from "@/stores/user.js";
 import Graph from "@/components/parts/graph.vue";
 import { create, all } from "mathjs";
+import {ref} from "vue";
 
 export default {
   name: "graphEdit",
   components: { Graph, Header },
   data() {
     return {
-      formula: "", // Поле ввода для формулы
+      formula: sessionStorage.getItem("func"), // Поле ввода для формулы
+      math: create(all),
       result: null, // Результат вычислений
       error: null, // Сообщение об ошибке
       variables: {
@@ -17,13 +19,15 @@ export default {
         y: null, // Пример переменной
         z: null,
       },
+      showGraph: true,
     };
   },
   setup() {
     const userStore = useUserStore();
-
+    const graphs = ref(null);
     return {
       userStore,
+      graphs
     };
   },
   methods: {
@@ -35,40 +39,31 @@ export default {
       }
       try {
         this.error = null;
-        // this.result = this.evaluateFormula(this.formula, this.variables);
       } catch (err) {
         this.error = `Ошибка: ${err.message}`;
         this.result = null;
       }
     },
 
-    // Функция для вычисления выражения
-    evaluateFormula(x, y, z) {
-      const variables = {
-        x: x,
-        y: y,
-        z: z,
-      }
-      const math = create(all);
-      // Преобразуем строку выражения, если есть пробелы
-      const cleanExpression = this.formula.replace(/\s+/g, "");
-
-      // Подставляем значения переменных в формулу
-      for (const [variable, value] of Object.entries(variables)) {
-        if (value !== null) {
-          this.formula = this.formula.replace(new RegExp(`\\b${variable}\\b`, "g"), value);
-        }
-      }
-
-      // Вычисляем выражение
-      return math.evaluate(this.formula);
+    preview(){
+      console.log(this.formula)
+      this.showGraph = false;
+      this.$nextTick(() => {
+        this.showGraph = true;
+      });
     },
+    sendToGraph() {
+      console.log(this.formula)
+
+      sessionStorage.setItem("func", this.formula)
+
+    },
+
   },
 };
 </script>
 
 <template>
-
   <Header
       :login="userStore.currentUser?.login || 'Гость'"
       :show_button="true"
@@ -76,8 +71,9 @@ export default {
   />
 
   <div class="main">
-    <Graph :width="600" :height="600" />
-<!--      :func = "evaluateFormula"-->
+    <div v-if="showGraph">
+      <Graph :width="600" :height="600" :func="formula" ref="graphs"/>
+    </div>
     <div class="input-func">
       <div class="formula-parser">
         <h1>Вычисление формулы</h1>
@@ -87,6 +83,11 @@ export default {
             @input="parseFormula"
             placeholder="Введите формулу, например: x + y"
         />
+
+        <div class="buttons">
+          <button class="button" @click="preview">Предпросмотр</button>
+          <button class="button" @click="sendToGraph">Сохранить</button>
+        </div>
       </div>
     </div>
   </div>
@@ -94,6 +95,7 @@ export default {
 
 <style scoped>
 @import "../style/body.css";
+@import "../style/button.css";
 
 .main {
   display: flex;
@@ -105,7 +107,7 @@ export default {
 .input-func {
   margin: 3em;
   width: 100%;
-  border: #003366 1px solid;
+  align-content: center;
 }
 
 .formula-parser {
@@ -113,6 +115,10 @@ export default {
   font-family: Arial, sans-serif;
 }
 
+.formula-parser h1{
+  text-align: center;
+  padding: 20px;
+}
 input {
   width: 100%;
   padding: 10px;
@@ -120,11 +126,18 @@ input {
   margin-bottom: 20px;
 }
 
-.error {
-  color: red;
+.buttons{
+  width: 100%;
+  margin: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
-.result {
-  color: green;
+button {
+  padding: 10px 20px;
+  margin: 10px;
 }
+
+
 </style>

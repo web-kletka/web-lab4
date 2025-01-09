@@ -4,6 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {drawGraphic, isDynamicChecked} from "@/components/js/graph.js";
 import {reactive} from "vue";
 import route from "@/route/index.js";
+import {compile} from "mathjs";
 
 export default {
   name: "graph",
@@ -12,13 +13,13 @@ export default {
       type: Array,
       default: () => [],
     },
-    func: {
-      type: Function,
-      default: () => () => {},
-    },
     width: {
       type: Number,
       default: 370
+    },
+    func:{
+      type: String,
+      default: sessionStorage.getItem("func")
     },
     height: {
       type: Number,
@@ -27,23 +28,20 @@ export default {
   },
   data(){
     return{
-      R: 0,
+      R: 1,
       points: reactive([])
     }
+  },
+  setup(props) {
+    return {
+      props, // Доступно внутри шаблона, если нужно
+    };
   },
   mounted() {
     const canvas = document.getElementById("graphCanvas");
 
-    // Функция для построения графика
-    const implicitFunction = (x, y, z) => {
-      // console.log(x, y, z)
-      return x ** 2 + y ** 2 + z ** 2 + Math.sin(4 * x) + Math.sin(4 * y) + Math.sin(4 * z) - this.R;
-    };
-
-    // const implicitFunction = this.func
-
-    const getColor = (x, y, z) => {
-      return implicitFunction(x, y, z) <= 0
+    const getColor = (x, y, z, r) => {
+      return compile(sessionStorage.getItem("func")).evaluate({x, y, z, r}) <= 0
     };
 
     // Создаем сцену, камеру и рендерер
@@ -69,14 +67,15 @@ export default {
     this.camera = camera;
     this.renderer = renderer;
     this.controls = controls;
-    this.implicitFunction = implicitFunction;
     this.getColor = getColor;
+
 
     // Анимация
     this.animate();
 
     // Вызов функции отрисовки графика
-    drawGraphic(scene, this.R, this.implicitFunction);
+
+    drawGraphic(scene, this.R, this.func);
   },
   methods: {
     animate() {
@@ -86,12 +85,12 @@ export default {
     },
     redrawGraphic(R){
       this.R = R;
-      drawGraphic(this.scene, this.R, this.implicitFunction);
+      drawGraphic(this.scene, this.R, this.func);
       this.redrawPoints()
     },
     redrawPoints(){
       console.log(this.points)
-      isDynamicChecked(this.scene, this.getColor, this.points, true)
+      isDynamicChecked(this.scene, this.getColor, this.points, true, this.R)
     },
     addPoint(point){
       this.points.push(point)

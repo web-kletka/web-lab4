@@ -6,29 +6,31 @@ import org.example.backend.common.enums.RegisterType;
 import org.example.backend.controlers.ResponseDAO.CutDownUser;
 import org.example.backend.controlers.ResponseDAO.CutDownUserResponse;
 import org.example.backend.data.entity.User;
+import org.example.backend.security.JwtUtil;
 import org.example.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Objects;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
-public class UsersController {
+@RequestMapping("/api/auth")
+public class AuthController {
 
     private final UserService userService;
-
+    private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UsersController(UserService userService) {
+    public AuthController(UserService userService, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    @PostMapping("/api/reg")
+    @PostMapping("/reg")
     public CutDownUserResponse registration(@RequestBody Map<String, String> requestBody) {
         String login = requestBody.get("login");
         Integer status = Objects.equals(requestBody.get("code_word"), "лучше хуем бить орехи чем учиться в политехе") ? 1: 0;
@@ -44,11 +46,12 @@ public class UsersController {
         return new CutDownUserResponse(
                 RegisterType.SUCCESSFUL.isSuccess(),
                 RegisterType.SUCCESSFUL.getResult(),
-                CutDownUser.fromUser(user));
+                CutDownUser.fromUser(user),
+                jwtUtil.generateToken(login));
     }
 
 
-    @PostMapping("/api/login")
+    @PostMapping("/login")
     public CutDownUserResponse login(@RequestBody Map<String, String> requestBody) {
 
         String login = requestBody.get("login");
@@ -64,7 +67,8 @@ public class UsersController {
             return new CutDownUserResponse(
                     LoginType.SUCCESS.isSuccess(),
                     LoginType.SUCCESS.getResult(),
-                    CutDownUser.fromUser(user));
+                    CutDownUser.fromUser(user),
+                    jwtUtil.generateToken(login));
         return new CutDownUserResponse(
                 LoginType.INVALID_LOGIN_OR_PASSWORD.isSuccess(),
                 LoginType.INVALID_LOGIN_OR_PASSWORD.getResult(),

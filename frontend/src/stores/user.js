@@ -6,24 +6,29 @@ export const useUserStore = defineStore('user', {
     state: () => ({
         success: true,
         result_message: '',
-        currentUser: null
+        currentUser: null,
     }),
     actions: {
-
         async login(userData) {
             await axios
                 .post(
-                    'http://localhost:8080/api/login',
+                    'http://localhost:8080/api/auth/login',
                     userData,
                     {
-                        headers: {'Content-Type': 'application/json'}
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
                     })
                 .then((response) => {
                     this.result_message = response.data.message;
-                    if (response.data.success)
+                    if (response.data.success) {
                         this.currentUser = response.data.user
+                        this.token = response.data.token
+                    }
                     this.success = response.data.success;
                     sessionStorage.setItem('currentUser', JSON.stringify(response.data.user));
+                    sessionStorage.setItem('token', response.data.token);
+
                 })
                 .catch((error) => {
                     console.error('Ошибка при входе:', error);
@@ -48,7 +53,7 @@ export const useUserStore = defineStore('user', {
         registration(userData){
             axios
                 .post(
-                    'http://localhost:8080/api/reg',
+                    'http://localhost:8080/api/auth/reg',
                     userData,
                     {
                         headers: {
@@ -60,7 +65,9 @@ export const useUserStore = defineStore('user', {
                     this.result_message = response.data;
                     if (response.data.success) {
                         this.currentUser = response.data.user
+                        this.token = response.data.token
                         sessionStorage.setItem('currentUser', JSON.stringify(response.data.user));
+                        sessionStorage.setItem('token', response.data.token);
                     }
                     this.success = response.data.success;
                 })
