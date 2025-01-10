@@ -2,43 +2,50 @@ import * as THREE from "three";
 import Worker from './searchPointsWorker.js?worker'
 
 let worker
-export function drawGraphic(scene, r, equationStr){
+export function drawGraphic(scene, r, equationStr) {
+    return new Promise((resolve, reject) => {
+        scene.clear();
+        // Создание осей
+        const axisX = createAxis(scene, 0xf0f0f0, new THREE.Vector3(-5, 0, 0), new THREE.Vector3(5, 0, 0)); // Красная ось X
+        const axisY = createAxis(scene, 0xf0f0f0, new THREE.Vector3(0, -5, 0), new THREE.Vector3(0, 5, 0)); // Зеленая ось Y
+        const axisZ = createAxis(scene, 0xf0f0f0, new THREE.Vector3(0, 0, -5), new THREE.Vector3(0, 0, 5)); // Синяя ось Z
 
-    scene.clear()
-    // Создание осей
-    const axisX = createAxis(scene,0xf0f0f0, new THREE.Vector3(-5, 0, 0), new THREE.Vector3(5, 0, 0)); // Красная ось X
-    const axisY = createAxis(scene,0xf0f0f0, new THREE.Vector3(0, -5, 0), new THREE.Vector3(0, 5, 0)); // Зеленая ось Y
-    const axisZ = createAxis(scene,0xf0f0f0, new THREE.Vector3(0, 0, -5), new THREE.Vector3(0, 0, 5)); // Синяя ось Z
+        // Добавление осей на сцену
+        scene.add(axisX);
+        scene.add(axisY);
+        scene.add(axisZ);
 
-    // Добавление осей на сцену
-    scene.add(axisX);
-    scene.add(axisY);
-    scene.add(axisZ);
+        console.log(equationStr);
 
-    console.log(equationStr)
+        if (worker) {
+            worker.terminate();
+        }
 
-    if (worker) {
-        worker.terminate();
-    }
+        worker = new Worker();
 
-    worker = new Worker()
+        worker.postMessage({ equationString: equationStr, r: r });
 
-    worker.postMessage({equationString: equationStr, r: r});
+        worker.onmessage = (event) => {
+            try {
+                const rawPoints = event.data;
 
-    worker.onmessage = (event) => {
-        const rawPoints = event.data;
+                const vertices = rawPoints.map(([x, y, z]) => new THREE.Vector3(x, y, z));
+                const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
+                const material = new THREE.PointsMaterial({ color: 0x003366, size: 0.05 });
+                const points = new THREE.Points(geometry, material);
+                scene.add(points);
 
-        const vertices = rawPoints.map(([x, y, z]) => new THREE.Vector3(x, y, z));
+                resolve(); // Уведомить, что работа завершена
+            } catch (error) {
+                reject(error); // Уведомить об ошибке
+            }
+        };
 
-        const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
-        const material = new THREE.PointsMaterial({ color: 0x003366, size: 0.05 });
-        const points = new THREE.Points(geometry, material);
-        scene.add(points);
-    };
-
-    worker.onerror = (error) => {
-        console.error("Ошибка в воркере:", error.message);
-    };
+        worker.onerror = (error) => {
+            console.error("Ошибка в воркере:", error.message);
+            reject(error); // Уведомить об ошибке
+        };
+    });
 }
 
 export function isDynamicChecked(scene, getColor, points, checked, r){
@@ -49,7 +56,8 @@ export function isDynamicChecked(scene, getColor, points, checked, r){
     }
     else{
         points.forEach(point => {
-            drawPoint(scene, point.x, point.y, point.z, point.color);
+            console.log(point.color)
+            drawPoint(scene, point.x, point.y, point.z, point.result ? "green" : "red");
         });
     }
 }

@@ -62,7 +62,7 @@ export const useUserStore = defineStore('user', {
                         }
                     })
                 .then((response) => {
-                    this.result_message = response.data;
+                    this.result_message = response.data.message;
                     if (response.data.success) {
                         this.currentUser = response.data.user
                         this.token = response.data.token

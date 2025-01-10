@@ -1,10 +1,10 @@
 <script>
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import {drawGraphic, isDynamicChecked} from "@/components/js/graph.js";
-import {reactive} from "vue";
-import route from "@/route/index.js";
-import {compile} from "mathjs";
+import { drawGraphic, isDynamicChecked } from "@/components/js/graph.js";
+// import { reactive } from "vue";
+import { compile } from "mathjs";
+import {bool} from "three/tsl";
 
 export default {
   name: "graph",
@@ -15,22 +15,27 @@ export default {
     },
     width: {
       type: Number,
-      default: 370
+      default: 370,
     },
-    func:{
+    formula: {
       type: String,
-      default: sessionStorage.getItem("func")
+      default: sessionStorage.getItem("formula"),
     },
     height: {
       type: Number,
-      default: 350
+      default: 350,
+    },
+    isDynamicCheck:{
+      type: Boolean,
+      default: false
     }
   },
-  data(){
-    return{
+  data() {
+    return {
       R: 1,
-      points: reactive([])
-    }
+      // points: reactive([]),
+      loading: true,
+    };
   },
   setup(props) {
     return {
@@ -41,7 +46,7 @@ export default {
     const canvas = document.getElementById("graphCanvas");
 
     const getColor = (x, y, z, r) => {
-      return compile(sessionStorage.getItem("func")).evaluate({x, y, z, r}) <= 0
+      return compile(sessionStorage.getItem("formula")).evaluate({ x, y, z, r }) <= 0;
     };
 
     // Создаем сцену, камеру и рендерер
@@ -69,13 +74,20 @@ export default {
     this.controls = controls;
     this.getColor = getColor;
 
-
     // Анимация
     this.animate();
 
     // Вызов функции отрисовки графика
+    this.loading = true
+    drawGraphic(scene, this.R, this.formula)
+        .then(() => {
+          this.loading = false;
+        })
+        .catch((error) => {
+          this.loading = false;
+        });
 
-    drawGraphic(scene, this.R, this.func);
+    this.redrawPoints()
   },
   methods: {
     animate() {
@@ -85,12 +97,20 @@ export default {
     },
     redrawGraphic(R){
       this.R = R;
-      drawGraphic(this.scene, this.R, this.func);
+      this.loading = true
+      console.log(this.formula)
+      drawGraphic(this.scene, this.R, this.formula)
+          .then(() => {
+            this.loading = false;
+          })
+          .catch((error) => {
+            this.loading = false;
+          });
       this.redrawPoints()
     },
     redrawPoints(){
       console.log(this.points)
-      isDynamicChecked(this.scene, this.getColor, this.points, true, this.R)
+      isDynamicChecked(this.scene, this.getColor, this.points, this.isDynamicCheck, this.R)
     },
     addPoint(point){
       this.points.push(point)
@@ -103,24 +123,45 @@ export default {
     },
     clearPoints(){
       this.points.splice(0, this.points.length)
+      this.redrawGraphic(this.R)
     },
   },
 };
 </script>
 
 <template>
-    <div class="graph-canvas">
-      <canvas id="graphCanvas" :width="width" :height="height"></canvas>
+  <div class="graph-canvas">
+    <canvas id="graphCanvas" :width="width" :height="height"></canvas>
+    <div v-if="loading" class="loading-overlay">
+      <img src="../../assets/802.gif" alt="Loading..." class="loading-gif" />
     </div>
+  </div>
 </template>
 
 <style scoped>
-
 .graph-canvas {
   display: flex;
+  position: relative;
   border: #003366 1px solid;
   margin: 0 0 6px;
   padding: 0;
 }
 
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+.loading-gif {
+  width: 50px;
+  height: 50px;
+}
 </style>

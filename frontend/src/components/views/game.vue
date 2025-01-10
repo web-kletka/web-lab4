@@ -11,7 +11,11 @@ import axios from "axios";
 export default {
   name: 'game',
   components: {MyTable, Graph, Header},
-
+  data() {
+    return {
+      isDynamicCh: false,
+    };
+  },
   setup() {
     const userStore = useUserStore();
     const result = ref("Нету данных на обработку")
@@ -20,7 +24,7 @@ export default {
     const graphs = ref(null);
     const myTable = ref(null);
     const point = ref({x:'', y:'', z:'',})
-    const func = sessionStorage.getItem("func")
+    const formula = sessionStorage.getItem("formula")
 
     const handleCheckboxChange = (index, event) => {
       const newValues = [...rValues.value];
@@ -55,7 +59,8 @@ export default {
         x: toRaw(point.value).x,
         y: toRaw(point.value).y,
         z: toRaw(point.value).z,
-        r: toRaw(result_r.value)
+        r: toRaw(result_r.value),
+        formula: sessionStorage.getItem("formula")
       };
 
       await axios
@@ -72,7 +77,7 @@ export default {
           .then((response) => {
             console.log(response.data.message)
             if(response.data.message !== "ok")
-              result.value = checked_result
+              result.value = response.data.message
             else{
               let check_point = response.data
               if (myTable.value) {
@@ -180,7 +185,7 @@ export default {
       addPoint,
       setPoints,
       clearPoints,
-      func
+      formula
     };
   },
   mounted() {
@@ -243,7 +248,7 @@ export default {
       <div class="input-group">
         <label>Динамичная проверка: </label>
         <div class="checkbox-group">
-          <label><input type="checkbox" name="dynamic_check_box"  class="check_dynamic"/></label>
+          <label><input type="checkbox" name="dynamic_check_box"  class="check_dynamic" v-model="isDynamicCh" /></label>
         </div>
       </div>
 
@@ -257,7 +262,7 @@ export default {
 
     <!-- Canvas для отрисовки фигуры -->
     <div class="graph">
-      <Graph ref="graphs" :func="func"/>
+      <Graph ref="graphs" :formula="formula" :isDynamicCheck="isDynamicCh"/>
       <router-link class="button" to="/graph" style="padding: 1px">изменение функции</router-link>
     </div>
 

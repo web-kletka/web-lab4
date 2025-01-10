@@ -3,14 +3,14 @@ import Header from "@/components/parts/header.vue";
 import { useUserStore } from "@/stores/user.js";
 import Graph from "@/components/parts/graph.vue";
 import { create, all } from "mathjs";
-import {ref} from "vue";
+import { ref } from "vue";
 
 export default {
   name: "graphEdit",
   components: { Graph, Header },
   data() {
     return {
-      formula: sessionStorage.getItem("func"), // Поле ввода для формулы
+      formula: sessionStorage.getItem("formula"), // Поле ввода для формулы
       math: create(all),
       result: null, // Результат вычислений
       error: null, // Сообщение об ошибке
@@ -54,9 +54,7 @@ export default {
     },
     sendToGraph() {
       console.log(this.formula)
-
-      sessionStorage.setItem("func", this.formula)
-
+      sessionStorage.setItem("formula", this.formula)
     },
 
   },
@@ -72,7 +70,7 @@ export default {
 
   <div class="main">
     <div v-if="showGraph">
-      <Graph :width="600" :height="600" :func="formula" ref="graphs"/>
+      <Graph :width="600" :height="600" :formula="formula" ref="graphs"/>
     </div>
     <div class="input-func">
       <div class="formula-parser">

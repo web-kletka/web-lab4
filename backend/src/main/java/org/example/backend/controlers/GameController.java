@@ -42,6 +42,7 @@ public class GameController {
         String y = requestBody.get("y");
         String z = requestBody.get("z");
         String r = requestBody.get("r");
+        String formula = requestBody.get("formula");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String user = authentication.getName();
 
@@ -50,7 +51,7 @@ public class GameController {
         try {
             parsParamsService.pars(x, y, z, r);
             parsParamsService.validParams();
-            boolean resultOfCalc = calculateResultService.calculate(parsParamsService.getX(), parsParamsService.getY(), parsParamsService.getZ(), parsParamsService.getR());
+            boolean resultOfCalc = calculateResultService.calculate(parsParamsService.getX(), parsParamsService.getY(), parsParamsService.getZ(), parsParamsService.getR(), formula);
             point = new Point(userService.getUserIdByUsername(user), parsParamsService.getX(), parsParamsService.getY(), parsParamsService.getZ(), parsParamsService.getR(), resultOfCalc, System.currentTimeMillis() - startTime);
 
             System.out.println("ok: " + point);
